@@ -2,6 +2,8 @@ from nltk import word_tokenize, sent_tokenize
 from nltk.util import ngrams, pad_sequence
 from nltk.lm.preprocessing import padded_everygram_pipeline
 from nltk.lm import MLE, WittenBellInterpolated
+import dill as pickle
+import os
 
 def train_ngram(corpus, n):
     """
@@ -21,6 +23,10 @@ def train_ngram(corpus, n):
     train_data, vocab = padded_everygram_pipeline(n, text)
     lm = MLE(n)
     lm.fit(train_data, vocab)
+
+    #Save the model
+    with open(os.path.join('data', 'models', corpus.split('/')[-1][:-4] + '.pkl'), 'wb') as f:
+        pickle.dump(lm, f)
 
     return lm
 
