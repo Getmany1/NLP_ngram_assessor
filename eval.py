@@ -2,6 +2,7 @@ from nltk import word_tokenize, sent_tokenize
 from nltk.util import ngrams
 from nltk.lm.preprocessing import pad_both_ends
 import copy
+import itertools
 
 def eval(text_to_analyze, n, lm, threshold=float('-inf')):
 
@@ -10,17 +11,17 @@ def eval(text_to_analyze, n, lm, threshold=float('-inf')):
     text = [word_tokenize(sent) for sent in text]
 
     #Highlight OOV words with *UNK* ('word' -> '<UNK*word*UNK>')
-    unk_mark = 'UNK'
+    unk_mark = '<UNK>'
     for sent_idx, sent in enumerate(text):
         for word_idx, word in enumerate(sent):
             if word not in lm.vocab:
-                text[sent_idx][word_idx] = '<'+unk_mark+'*'+word+'*'+unk_mark+'>'
+                text[sent_idx][word_idx] = word+'*'+unk_mark
     
     #Add start-of-sentence and end-of-sentence symbols (<s> and </s>)
     text = [list(pad_both_ends(sent,n)) for sent in text]
 
     evaluated = copy.deepcopy(text)
-    errs = "Bad ngrams:\n"
+    errs = ""
     err_count = 0
 
     #Analyze ngrams in the given text. Mark ngrams with low
@@ -34,15 +35,27 @@ def eval(text_to_analyze, n, lm, threshold=float('-inf')):
         i=0
         while i < len(sent)-n+1:
             ngram = sent[i:i+n]
-            if lm.logscore(ngram[-1], ' '.join(ngram[:-1]).split()) <= threshold:
-                err_count += 1
-                evaluated[sent_idx][i+n-1] += '*' + str(err_count)
-                errs += str(err_count) + '. ' + \
-                    ' '.join(text[sent_idx][i:i+n]) + '\n'
+            if all([unk_mark not in word for word in ngram]):
+                if lm.logscore(ngram[-1], ' '.join(ngram[:-1]).split()) <= threshold:
+                    err_count += 1
+                    evaluated[sent_idx][i+n-1] += '*' + str(err_count)
+                    errs += str(err_count) + '. ' + \
+                        ' '.join(text[sent_idx][i:i+n]) + '\n'
             i += 1
-    #Return the evaluation results
+            
+    #Print the evaluation results
+    print("Text to evaluate:")
+    print(text_to_analyze)
+    print()
+    print("Analyzed text with annotations:")
+    print(' '.join(list(itertools.chain(*evaluated))))
+    print()
+    print("Bad ngrams:")
     print(errs)
-    #result = "Text to evaluate:\n" + text_to_analyze + "\n" + \
-    #    "Analyzed text with annotations:\n" + ' '.join(evaluated) + \
-    #        "\n" + errs
-    #return result
+    
+    #Return the results
+    result = "Text to evaluate:\n " + text_to_analyze + "\n " + \
+        "Analyzed text with annotations:\n" + \
+            ' '.join(list(itertools.chain(*evaluated))) + "\n" + \
+                "Bad ngrams:\n" + errs
+    return result
