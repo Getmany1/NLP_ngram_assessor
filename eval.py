@@ -50,12 +50,12 @@ def eval(text_to_analyze, n, lm, threshold=float('-inf')):
     print("Analyzed text with annotations:")
     print(' '.join(list(itertools.chain(*evaluated))))
     print()
-    print("Bad ngrams:")
+    print("Uncommon ngrams:")
     print(errs)
     
     #Return the results
     result = "Text to evaluate:\n " + text_to_analyze + "\n " + \
         "Analyzed text with annotations:\n" + \
             ' '.join(list(itertools.chain(*evaluated))) + "\n" + \
-                "Bad ngrams:\n" + errs
+                "Uncommon ngrams:\n" + errs
     return result
