@@ -7,7 +7,10 @@ from eval import eval
 corp_dir = os.path.join('data', 'corpora')
 model_dir = os.path.join('data', 'models')
 corpus_name = 'wikipedia2008_en.txt'
-model_name = 'iltalehti.pkl'
+
+#model_name = 'iltalehti.pkl'
+model_name = 'wikipedia2008_en.pkl'
+
 model_type = 'ngram' #model type
 n = 2 #ngram size
 threshold = float('-inf') #lowest threshold for ngram log-probability
