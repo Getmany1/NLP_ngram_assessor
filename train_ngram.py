@@ -11,7 +11,7 @@ def train_ngram(corpus, n):
     """
 
     #Read the corpus file and lowercase the text
-    with open(corpus, encoding='utf8') as f:
+    with open(os.path.join('data','corpora',corpus), encoding='utf8') as f:
         text = f.read().lower()
 
     #Tokenize
@@ -25,7 +25,7 @@ def train_ngram(corpus, n):
     lm.fit(train_data, vocab)
 
     #Save the model
-    with open(os.path.join('data', 'models', corpus.split('/')[-1][:-4] + '.pkl'), 'wb') as f:
+    with open(os.path.join('data', 'models', corpus[:-4] + '.pkl'), 'wb') as f:
         pickle.dump(lm, f)
 
     return lm
