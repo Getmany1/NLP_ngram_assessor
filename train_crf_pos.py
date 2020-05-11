@@ -1,5 +1,9 @@
+import os
 import nltk
 #nltk.download('treebank')
+from sklearn_crfsuite import CRF, metrics
+import dill as pickle
+
 def get_features(sent):
     return [{
         'word': sent[idx],
@@ -25,26 +29,46 @@ def get_features(sent):
     } for idx in range(len(sent))]
 
 language = 'english'
+
+# Required corpus structure:
+# [[(w1,t1), (w2,t2),...(wn,tn)], [(w1,t1)(w2,t2),...(wm,tm)],...]
+corpus_name = 'Penn_treebank'
 corpus = nltk.corpus.treebank.tagged_sents()
-# common features (baseline set)
-feat_all = {} 
+
+feat_all = {} # common features (baseline set)
 feat_en = {} # extra features for English
 features = {**feat_all, **feat_en}
-test_frac = 0.8 # fraction of data for the training set
+train_frac = 0.8 # fraction of data for the training set
+split_idx = int(train_frac*len(corpus))
 
+# Extract the feautures and separate labels from features
 X = [get_features([pair[0] for pair in sent]) for sent in corpus]
 y = [[pair[1] for pair in sent] for sent in corpus]
 
-X_train = X[:int(test_frac*len(corpus))]
-y_train = y[:int(test_frac*len(corpus))]
-X_test = X[int(test_frac*len(corpus)):]
-y_test = y[int(test_frac*len(corpus)):]
+# Create the training and the test sets
+X_train = X[:split_idx]
+y_train = y[:split_idx]
+X_test = X[split_idx:]
+y_test = y[split_idx:]
 
 print(len(corpus))
 print(len(X))
 print(X[0])
 
+model = CRF(
+    algorithm='lbfgs', # gradient descent using the L-BFGS method
+    c1=0.1, # coeff. for L1 regularization
+    c2=0.1, # coeff. for L2 regularization
+    max_iterations=100,
+)
+model.fit(X_train, y_train)
 
-#trainset = corpus[:int(test_frac*len(corpus))]
-#testset = corpus[int(test_frac*len(corpus)):]
+#Save the model
+with open(os.path.join('data', 'models', corpus_name + '_crf.pkl'), 'wb') as f:
+    pickle.dump(model, f)
+
+# Evaluate the model
+y_pred = model.predict(X_test)
+
+
 
