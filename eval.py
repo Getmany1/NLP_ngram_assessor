@@ -22,7 +22,7 @@ def tag(text, pos_tagger):
 def eval(text_to_analyze, n, lm, pos_tagger, threshold=float('-inf')):
 
     # Tokenize
-    text = sent_tokenize(text_to_analyze)#.lower())
+    text = sent_tokenize(text_to_analyze)
     text = [word_tokenize(sent) for sent in text]
 
     # Add POS tags

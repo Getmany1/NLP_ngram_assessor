@@ -5,14 +5,19 @@ from nltk.lm import MLE, WittenBellInterpolated
 import dill as pickle
 import os
 
-def train_ngram(corpus, n):
+def train_ngram(corpus, n, words=True):
     """
     Train ngram language model from a corpus.
     """
 
-    # Read the corpus file and lowercase the text
+    # Read the corpus file
     with open(os.path.join('data','corpora',corpus), encoding='utf8') as f:
-        text = f.read().lower()
+        text = f.read()
+
+    # Lowercase if the model will be trained on words (to be skipped for 
+    # POS tags)
+    if words:
+        text = text.lower()
 
     # Tokenize
     text = sent_tokenize(text)

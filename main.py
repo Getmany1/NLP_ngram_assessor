@@ -29,7 +29,7 @@ SAVE_REPORT = False # save evaluation results
 
 if TRAIN_LM:
     if lm_type == 'ngram':
-        lm = train_ngram(lm_corpus_name, n)
+        lm = train_ngram(lm_corpus_name, n, words=True)
 else:
     with open(os.path.join(model_dir, lm_name), 'rb') as f:
         lm = pickle.load(f)
