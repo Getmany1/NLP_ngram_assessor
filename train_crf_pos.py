@@ -28,16 +28,16 @@ def get_features(sent):
         'has_hyphen': '-' in sent[idx],
     } for idx in range(len(sent))]
 
-language = 'english'
+#language = 'english'
 
 # Required corpus structure:
 # [[(w1,t1), (w2,t2),...(wn,tn)], [(w1,t1)(w2,t2),...(wm,tm)],...]
 corpus_name = 'Penn_treebank'
 corpus = nltk.corpus.treebank.tagged_sents()
 
-feat_all = {} # common features (baseline set)
-feat_en = {} # extra features for English
-features = {**feat_all, **feat_en}
+#feat_all = {} # common features (baseline set)
+#feat_en = {} # extra features for English
+#features = {**feat_all, **feat_en}
 train_frac = 0.8 # fraction of data for the training set
 split_idx = int(train_frac*len(corpus))
 
@@ -51,24 +51,24 @@ y_train = y[:split_idx]
 X_test = X[split_idx:]
 y_test = y[split_idx:]
 
-print(len(corpus))
-print(len(X))
-print(X[0])
-
+# Create the CRF model
 model = CRF(
     algorithm='lbfgs', # gradient descent using the L-BFGS method
     c1=0.1, # coeff. for L1 regularization
     c2=0.1, # coeff. for L2 regularization
     max_iterations=100,
 )
+
+# Train the model
 model.fit(X_train, y_train)
 
-#Save the model
+# Save the model
 with open(os.path.join('data', 'models', corpus_name + '_crf.pkl'), 'wb') as f:
     pickle.dump(model, f)
 
 # Evaluate the model
 y_pred = model.predict(X_test)
+print("Test accuracy: %.4f" % metrics.flat_accuracy_score(y_test, y_pred))
 
 
 
