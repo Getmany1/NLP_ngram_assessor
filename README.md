@@ -10,6 +10,9 @@ A tool for evaluating sentences using an N-gram language model. The model can be
 Text to evaluate:
 This is a test text. The automatic assessor will report OOV words and uncommon ngrams.
 
+Text tagged with part-of-speech tags: 
+[[('This', 'DT'), ('is', 'VBZ'), ('a', 'DT'), ('test', 'NN'), ('text', 'NN'), ('.', '.')], [('The', 'DT'), ('automatic', 'JJ'), ('assessor', 'NN'), ('will', 'MD'), ('report', 'VB'), ('OOV', 'NNP'), ('words', 'NNS'), ('and', 'CC'), ('uncommon', 'JJ'), ('ngrams', 'NNS'), ('.', '.')]]
+
 Analyzed text with annotations:
 \<s> this is a test text . \</s> \<s> the automatic assessor\*1 will\*2 report oov*\<UNK> words and uncommon ngrams*\<UNK> . \</s>
 
