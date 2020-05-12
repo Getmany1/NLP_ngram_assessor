@@ -10,7 +10,6 @@ def word2pos(corpus, pos_tagger):
     # Read the corpus file
     with open(os.path.join('data','corpora', corpus), encoding='utf8') as f:
         text = f.read()
-    
     # Load the POS tagger
     with open(os.path.join('data', 'models', pos_tagger), 'rb') as f:
         pos_tagger = pickle.load(f)
