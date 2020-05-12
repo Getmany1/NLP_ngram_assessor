@@ -3,12 +3,17 @@ import itertools
 from train_crf_pos import get_features
 import os
 from nltk import word_tokenize, sent_tokenize
+import dill as pickle
 
 def word2pos(corpus, pos_tagger):
 
     # Read the corpus file
     with open(os.path.join('data','corpora', corpus), encoding='utf8') as f:
         text = f.read()
+    
+    # Load the POS tagger
+    with open(os.path.join('data', 'models', pos_tagger), 'rb') as f:
+        pos_tagger = pickle.load(f)
         
     # Tokenize
     text = sent_tokenize(text)
