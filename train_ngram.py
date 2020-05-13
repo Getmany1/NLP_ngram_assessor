@@ -30,7 +30,8 @@ def train_ngram(corpus, n, words=True):
     lm.fit(train_data, vocab)
 
     # Save the model
-    with open(os.path.join('data', 'models', corpus[:-4] + '.pkl'), 'wb') as f:
+    with open(os.path.join('data', 'models', corpus[:-4] + b'_' \
+        + str(n) + 'gram' + '.pkl'), 'wb') as f:
         pickle.dump(lm, f)
 
     return lm
