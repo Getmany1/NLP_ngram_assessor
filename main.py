@@ -13,6 +13,7 @@ pos_corpus = nltk.corpus.treebank.tagged_sents()
 
 #lm_name = 'iltalehti.pkl'
 lm_name = 'wikipedia2008_en.pkl'
+pos_lm_name = 'wikipedia2008_en_pos.pkl'
 pos_name = 'Penn_treebank_crf.pkl'
 
 lm_type = 'ngram' # language model type
@@ -41,7 +42,10 @@ else:
     with open(os.path.join(model_dir, pos_name), 'rb') as f:
         pos_tagger = pickle.load(f)
 
-eval_result = eval(text_to_analyze, n, lm, pos_tagger, threshold)
+with open(os.path.join(model_dir, pos_lm_name), 'rb') as f:
+    pos_lm = pickle.load(f)
+
+eval_result = eval(text_to_analyze, n, lm, pos_lm, pos_tagger, threshold)
 if SAVE_REPORT:
     with open(os.path.join('results', result_file), 'w', encoding='utf-8') as f:
             f.write(eval_result)

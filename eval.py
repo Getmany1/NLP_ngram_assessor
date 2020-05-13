@@ -17,16 +17,16 @@ def tag(text, pos_tagger):
         for j in range(len(text[i])):
             tagged_sent.append((text[i][j], tags[i][j]))
         tagged_text.append(tagged_sent)
-    return tagged_text
+    return tags, tagged_text
     
-def eval(text_to_analyze, n, lm, pos_tagger, threshold=float('-inf')):
+def eval(text_to_analyze, n, lm, pos_lm, pos_tagger, threshold=float('-inf')):
 
     # Tokenize
     text = sent_tokenize(text_to_analyze)
     text = [word_tokenize(sent) for sent in text]
 
     # Add POS tags
-    tagged_text = tag(text, pos_tagger)
+    tags, tagged_text = tag(text, pos_tagger)
 
     # Lowercase
     text = [[word.lower() for word in sent] for sent in text]
@@ -40,6 +40,8 @@ def eval(text_to_analyze, n, lm, pos_tagger, threshold=float('-inf')):
     
     # Add start-of-sentence and end-of-sentence symbols (<s> and </s>)
     text = [list(pad_both_ends(sent,n)) for sent in text]
+
+    #lm.vocab.lookup(text, unk_cutoff=1)
 
     evaluated = copy.deepcopy(text)
     errs = ""
@@ -68,7 +70,7 @@ def eval(text_to_analyze, n, lm, pos_tagger, threshold=float('-inf')):
     print("Text to evaluate: ")
     print(text_to_analyze)
     print()
-    print("Text tagged with part-of-speech tags: ")
+    print("Text tagged with part-of-speech tags: ") # For evaluator
     print(tagged_text)
     print()
     print("Analyzed text with annotations: ")
