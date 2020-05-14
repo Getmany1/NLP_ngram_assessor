@@ -22,8 +22,7 @@ n = 2 # ngram size
 pos_type = 'crf' # POS model type
 threshold = float('-inf') # lowest threshold for ngram log-probability
                             # in text evaluation
-text_to_analyze = "This is a test text. The automatic assessor will report \
-    OOV words and uncommon ngrams."
+text_to_analyze = "This is a test text. The automatic assessor will report OOV words and uncommon ngrams."
 result_file = 'testresult'
 TRAIN_LM = False # train new language model or load pretrained one
 TRAIN_POS = False # train POS tagger or load pretrained one
@@ -46,7 +45,7 @@ else:
 with open(os.path.join(model_dir, pos_lm_name), 'rb') as f:
     pos_lm = pickle.load(f)
 
-eval_result = eval(text_to_analyze, n, lm, pos_lm, pos_tagger, threshold)
+eval_result = eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold)
 if SAVE_REPORT:
     with open(os.path.join('results', result_file), 'w', encoding='utf-8') as f:
             f.write(eval_result)
