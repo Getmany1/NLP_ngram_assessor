@@ -42,6 +42,7 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
         pos_descr_dict = pos_dict_en()
     
     n = lm.counts.__len__() # LM ngram order
+    n = 2
     n_pos = pos_lm.counts.__len__() # LM ngram order
     
     # Tokenize
