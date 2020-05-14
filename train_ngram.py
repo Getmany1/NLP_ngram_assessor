@@ -3,6 +3,7 @@ from nltk.util import ngrams, pad_sequence
 from nltk.lm.preprocessing import padded_everygram_pipeline
 from nltk.lm import MLE, WittenBellInterpolated
 import dill as pickle
+import pickle5
 import os
 
 def train_ngram(corpus, n, words=True):
@@ -21,7 +22,10 @@ def train_ngram(corpus, n, words=True):
 
     # Tokenize
     text = sent_tokenize(text)
-    text = [word_tokenize(sent) for sent in text]
+    if words:
+        text = [word_tokenize(sent) for sent in text]
+    else:
+        text = [sent.split() for sent in text]
 
     # Train ngram language model
     # Do not apply any ngram smoothing thechniques for the model
