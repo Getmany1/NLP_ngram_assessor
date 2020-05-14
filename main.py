@@ -12,7 +12,8 @@ lm_corpus_name = 'wikipedia2008_en.txt'
 pos_corpus = nltk.corpus.treebank.tagged_sents()
 
 #lm_name = 'iltalehti.pkl'
-lm_name = 'wikipedia2008_en.pkl'
+lm_name = 'wikipedia2008_en_3gram.pkl'
+#lm_name = 'wikipedia2008_en.pkl'
 pos_lm_name = 'wikipedia2008_en_pos.pkl'
 pos_name = 'Penn_treebank_crf.pkl'
 

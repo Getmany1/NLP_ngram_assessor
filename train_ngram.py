@@ -4,12 +4,14 @@ from nltk.lm.preprocessing import padded_everygram_pipeline
 from nltk.lm import MLE, WittenBellInterpolated
 import dill as pickle
 import os
+import pickle5
+#import joblib
 
 def train_ngram(corpus, n, words=True):
     """
     Train ngram language model from a corpus.
     """
-
+    
     # Read the corpus file
     with open(os.path.join('data','corpora',corpus), encoding='utf8') as f:
         text = f.read()
@@ -30,9 +32,8 @@ def train_ngram(corpus, n, words=True):
     lm.fit(train_data, vocab)
 
     # Save the model
-    with open(os.path.join('data', 'models', corpus[:-4] + b'_' \
-        + str(n) + 'gram' + '.pkl'), 'wb') as f:
-        pickle.dump(lm, f)
+    with open(os.path.join('data', 'models', corpus[:-4] + '_' + str(n) + 'gram' + '.pkl'), 'wb') as f:
+        pickle5.dump(lm, f, pickle5.HIGHEST_PROTOCOL)
+    #hkl.dump(lm, os.path.join('data', 'models', corpus[:-4] + '_' + str(n) + 'gram' + '.hkl'), mode='w')
 
     return lm
-
