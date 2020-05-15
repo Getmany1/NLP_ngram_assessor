@@ -36,6 +36,7 @@ def pos_dict_en():
             '#': 'Pound sign',
             'NNP': 'Proper noun, singular',
             '$': 'Dollar sign',
+            'PRP$': 'Possessive pronoun',
             'NNPS': 'Proper noun (plural)',
             '.': 'Sentence-final punctuation',
             'PDT': 'Predeterminer', 
@@ -62,4 +63,5 @@ def pos_dict_en():
             '-NONE-': 'None',
             '</s>': 'End of sentence',
             '<UNK>': 'Unknown',
+            "''": 'Empty tag'
             }

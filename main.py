@@ -4,7 +4,7 @@ import dill as pickle
 from train_ngram import train_ngram
 from train_crf_pos import train_crf_pos
 from eval import eval
-import pickle5
+#import pickle5
 
 # Parameters
 corp_dir = os.path.join('data', 'corpora')
@@ -15,7 +15,7 @@ pos_corpus = nltk.corpus.treebank.tagged_sents()
 #lm_name = 'iltalehti.pkl'
 #lm_name = 'wikipedia2008_en_3gram.pkl'
 lm_name = 'wikipedia2008_en.pkl'
-pos_lm_name = 'wikipedia2008_en_pos.pkl'
+pos_lm_name = 'wikipedia2008_en_pos_3gram.pkl'
 pos_name = 'Penn_treebank_crf.pkl'
 
 lm_type = 'ngram' # language model type
@@ -34,17 +34,17 @@ if TRAIN_LM:
         lm = train_ngram(lm_corpus_name, n, words=True)
 else:
     with open(os.path.join(model_dir, lm_name), 'rb') as f:
-        lm = pickle5.load(f)
+        lm = pickle.load(f)
 
 if TRAIN_POS:
     if pos_type == 'crf':
         pos_tagger = train_crf_pos(pos_corpus)
 else:
     with open(os.path.join(model_dir, pos_name), 'rb') as f:
-        pos_tagger = pickle5.load(f)
+        pos_tagger = pickle.load(f)
 
 with open(os.path.join(model_dir, pos_lm_name), 'rb') as f:
-    pos_lm = pickle5.load(f)
+    pos_lm = pickle.load(f)
 
 eval_result = eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold)
 if SAVE_REPORT:
