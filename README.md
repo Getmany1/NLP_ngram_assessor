@@ -1,7 +1,7 @@
 # NLP_ngram_assessor
 A tool for evaluating sentences using an N-gram language model. The model can be trained using a text corpus. Alternatively, a pretrained model can be loaded. The evaluating script checks the sentences for out-of-vocabulary (OOV) words and highligh them with \<UNK> mark. In addition, it highlights uncommon N-grams. N-grams which have log-probability below the predefined theshold are supposed to be uncommon. By default, the threshold is set to -infinity, which corresponds to a log-probability of an unseen N-gram.
 
-# Link for data (corpora & models) for Aalto users
+## Link for data (corpora & models) for Aalto users
 https://drive.google.com/open?id=1vh1SMU1g5Wd7xsRH8UoHVlOk50K9vSqH
   
   ## Example
