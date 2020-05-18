@@ -13,7 +13,7 @@ https://drive.google.com/open?id=1vh1SMU1g5Wd7xsRH8UoHVlOk50K9vSqH
 Text to evaluate: 
 This is a test text. The automatic assessor will report OOV words and uncommon what ngrams.
 
-(For evaluator) Text tagged with part-of-speech tags: 
+(For human evaluator) Text tagged with part-of-speech tags: 
 [[('This', 'DT'), ('is', 'VBZ'), ('a', 'DT'), ('test', 'NN'), ('text', 'NN'), ('.', '.')], [('The', 'DT'), ('automatic', 'JJ'), ('assessor', 'NN'), ('will', 'MD'), ('report', 'VB'), ('OOV', 'NNP'), ('words', 'NNS'), ('and', 'CC'), ('uncommon', 'JJ'), ('what', 'WP'), ('ngrams', 'NNS'), ('.', '.')]]
 
 Analyzed text with annotations: 
