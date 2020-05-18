@@ -160,7 +160,7 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
     print("Text to evaluate: ")
     print(text_to_analyze)
     print()
-    print("(For evaluator) Text tagged with part-of-speech tags: ")
+    print("(For human evaluator) Text tagged with part-of-speech tags: ")
     print(tagged_text)
     print()
     print("Analyzed text with annotations: ")
