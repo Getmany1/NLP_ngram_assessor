@@ -33,13 +33,14 @@ def train_crf_pos(corpus):
 
     # Required corpus structure:
     # [[(w1,t1), (w2,t2),...(wn,tn)], [(w1,t1)(w2,t2),...(wm,tm)],...]
-    corpus_name = 'Penn_treebank'
+    #corpus_name = 'Penn_treebank'
+    corpus_name = 'UD_Swedish-Talbanken'
     #corpus = nltk.corpus.treebank.tagged_sents()
 
     #feat_all = {} # common features (baseline set)
     #feat_en = {} # extra features for English
     #features = {**feat_all, **feat_en}
-    train_frac = 0.8 # fraction of data for the training set
+    train_frac = 0.9 # fraction of data for the training set
     split_idx = int(train_frac*len(corpus))
 
     # Extract the feautures and separate labels from features
