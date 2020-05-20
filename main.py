@@ -14,16 +14,20 @@ pos_corpus = nltk.corpus.treebank.tagged_sents()
 
 #lm_name = 'iltalehti_2gram.pkl'
 #lm_name = 'wikipedia2008_en_3gram.pkl'
-lm_name = 'wikipedia2008_en_2gram.pkl'
-pos_lm_name = 'wikipedia2008_en_pos_3gram.pkl'
-pos_name = 'Penn_treebank_crf.pkl'
+#lm_name = 'wikipedia2008_en_2gram.pkl'
+lm_name = 'wikipedia_sv_2gram.pkl'
+#pos_lm_name = 'wikipedia2008_en_pos_3gram.pkl'
+pos_lm_name = 'wikipedia_sv_pos_3gram.pkl'
+#pos_name = 'Penn_treebank_crf.pkl'
+pos_name = 'UD_Swedish-Talbanken_crf.pkl'
 
 lm_type = 'ngram' # language model type
 n = 2 # ngram size
 pos_type = 'crf' # POS model type
 threshold = float('-inf') # lowest threshold for ngram log-probability
                             # in text evaluation
-text_to_analyze = "This is a test text. The automatic assessor will report OOV words and uncommon ngrams."
+#text_to_analyze = "This is a test text. The automatic assessor will report OOV words and uncommon ngrams."
+text_to_analyze = 'Jag försökte ringa dig, men din mobil var avstängd.Var är du?! Hoppas att du  hör mitt meddelande snart. Eva ligger på sjukhus. Hon råkade ut för en bilolycka i morse, men det är ingen  fara med henne! Eva åkte till jobbet med min bil. I den stora korsningen på Vasa-gatan kom en buss s om körde för fort och kunde inte stanna vid rödljuset. Som du kanske vet var det kyligt och jättehalt på morgonen. Eva hann inte stoppa sin bil utan körde rakt in i bussen. Hon kände sig yr, hon hade ont i huvudet, ryggen och ena benet. Därför fördes hon till sjukhus. Till all lycka mår Eva ganska bra nu! Läkaren tror att hon kommer att skrivas ut i övermorgon eller kanske på fredag. Ska vi hälsa på henne på sjukhuset? Hon är i rum nummer 28B, på fjärde våningen. Om du vill så följer jag gärna med. Jag kan visa rummet för dig sedan -  det är svårt att hitta på sjukhuset! Min bil är okörbar just nu så det blir du som får skjutsa mig! Men ring mig när du hör det här meddelandet!'
 result_file = 'testresult'
 TRAIN_LM = False # train new language model or load pretrained one
 TRAIN_POS = False # train POS tagger or load pretrained one

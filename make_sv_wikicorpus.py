@@ -1,4 +1,5 @@
 import os
+import logging
 from gensim.corpora.wikicorpus import WikiCorpus
 
 def make_sv_wikicorpus():

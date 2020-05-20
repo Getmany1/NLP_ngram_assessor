@@ -45,10 +45,12 @@ def mean_logprob(context, pos_lm):
 def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
     
     #
-    lang = 'english'
+    lang = 'swedish'
     # Load the descriptions of POS tags
     if lang == 'english':
         pos_descr_dict = pos_dict_en()
+    elif lang == 'swedish':
+        pos_descr_dict = pos_dict_sv()
     
     n = 2 # LM ngram order. Use bigrams
     n_pos = pos_lm.counts.__len__() # POS LM ngram order
@@ -144,12 +146,18 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
                     if pos_logscore == -float('inf') or pos_logscore<avg_pos_logscore:
                         errs += 'you used the ' + pos_descr_dict[tags[sent_idx]
                                                                  [i +(n_pos-1)]].lower() + ' ' + \
-                            ngram[-1] + '; try to use another part of speech, for example ' + \
-                                pos_descr_dict[pos_lm.counts.
-                                               __getitem__(tags[sent_idx]
+                            ngram[-1]
+                        next_tag_dict = pos_lm.counts.__getitem__(tags[sent_idx]
                                                            [i-2+(n_pos-1):
-                                                            i+(n_pos-1)]).max()].lower() + \
+                                                            i+(n_pos-1)])
+                        if len(next_tag_dict) > 0:
+                            errs += '; try to use another part of speech, for example ' + \
+                                pos_descr_dict[next_tag_dict.max()].lower() + \
                                     '.\n'
+                        else:
+                            # No tag t_i can follow the tag sequence
+                            # t_(i-2), t_(i-1)
+                            errs += '; ???\n'
                     else:                           
                         errs += 'try to use some other ' + pos_descr_dict[tags[sent_idx]
                                                                           [i +(n_pos-1)]].lower() + \
