@@ -4,18 +4,20 @@ import dill as pickle
 from train_ngram import train_ngram
 from train_crf_pos import train_crf_pos
 from eval import eval
-#import pickle5
 
 # Parameters
 corp_dir = os.path.join('data', 'corpora')
 model_dir = os.path.join('data', 'models')
-lm_corpus_name = 'wikipedia2008_en.txt'
-pos_corpus = nltk.corpus.treebank.tagged_sents()
+#lm_corpus_name = 'wikipedia2008_en.txt'
+lm_corpus_name = 'wikipedia_sv.txt' #source: https://linguatools.org/
+#pos_corpus = nltk.corpus.treebank.tagged_sents()
+pos_corpus = 'UD_Swedish-Talbanken.pkl' #source: https://universaldependencies.org/
 
 #lm_name = 'iltalehti_2gram.pkl'
 #lm_name = 'wikipedia2008_en_3gram.pkl'
 #lm_name = 'wikipedia2008_en_2gram.pkl'
 lm_name = 'wikipedia_sv_2gram.pkl'
+#lm_name = 'wikipedia_sv_3gram.pkl'
 #pos_lm_name = 'wikipedia2008_en_pos_3gram.pkl'
 pos_lm_name = 'wikipedia_sv_pos_3gram.pkl'
 #pos_name = 'Penn_treebank_crf.pkl'
