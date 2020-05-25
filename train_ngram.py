@@ -3,7 +3,6 @@ from nltk.util import ngrams, pad_sequence
 from nltk.lm.preprocessing import padded_everygram_pipeline
 from nltk.lm import MLE, WittenBellInterpolated
 import dill as pickle
-#import pickle5
 import os
 
 def train_ngram(corpus, n, words=True):
@@ -35,8 +34,6 @@ def train_ngram(corpus, n, words=True):
 
     # Save the model
     with open(os.path.join('data', 'models', corpus[:-4] + '_' + str(n) + 'gram' + '.pkl'), 'wb') as f:
-        #pickle5.dump(lm, f, 4) #or pickle5.HIGHEST_PROTOCOL
         pickle.dump(lm, f, 4)
-    #hkl.dump(lm, os.path.join('data', 'models', corpus[:-4] + '_' + str(n) + 'gram' + '.hkl'), mode='w')
 
     return lm
