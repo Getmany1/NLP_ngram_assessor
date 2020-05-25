@@ -34,7 +34,8 @@ def train_crf_pos(corpus):
     # Required corpus structure:
     # [[(w1,t1), (w2,t2),...(wn,tn)], [(w1,t1)(w2,t2),...(wm,tm)],...]
     #corpus_name = 'Penn_treebank'
-    corpus_name = 'UD_Swedish-Talbanken'
+    #corpus_name = 'UD_Swedish-Talbanken'
+    corpus_name = 'Yle_sv_pos'
     #corpus = nltk.corpus.treebank.tagged_sents()
 
     #feat_all = {} # common features (baseline set)

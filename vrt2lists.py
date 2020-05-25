@@ -24,6 +24,7 @@ def vrt2lists():
                 if len(item) == 8:
                     word = item[0]
                     tag = item[3]
+                    #sentence.append((word, tag))
                     sentence.append(word)
                     tag_sentence.append(tag)
             if len(sentence) > 1 and len(sentence) == len(tag_sentence):
@@ -37,3 +38,6 @@ def vrt2lists():
         
     with open(os.path.join('data','corpora','Yle_sv_pos.pkl'), 'wb') as f:
         pickle.dump(tag_corpus, f, 4)
+
+    with open(os.path.join('data','corpora','Yle_sv_words_tags.pkl'), 'wb') as f:
+        pickle.dump(corpus, f, 4)

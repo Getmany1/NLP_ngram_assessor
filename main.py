@@ -18,10 +18,13 @@ pos_corpus = 'UD_Swedish-Talbanken.pkl' #source: https://universaldependencies.o
 #lm_name = 'wikipedia2008_en_2gram.pkl'
 lm_name = 'wikipedia_sv_2gram.pkl'
 #lm_name = 'wikipedia_sv_3gram.pkl'
+#lm_name = 'Yle_sv_2gram.pkl'
 #pos_lm_name = 'wikipedia2008_en_pos_3gram.pkl'
 pos_lm_name = 'wikipedia_sv_pos_3gram.pkl'
+#pos_lm_name = 'Yle_sv_pos_3gram.pkl'
 #pos_name = 'Penn_treebank_crf.pkl'
-pos_name = 'UD_Swedish-Talbanken_crf.pkl'
+#pos_name = 'UD_Swedish-Talbanken_crf.pkl'
+pos_name = 'Yle_sv_pos_crf.pkl'
 
 lm_type = 'ngram' # language model type
 n = 2 # ngram size

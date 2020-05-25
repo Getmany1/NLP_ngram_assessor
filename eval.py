@@ -50,7 +50,7 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
     if lang == 'english':
         pos_descr_dict = pos_dict_en()
     elif lang == 'swedish':
-        pos_descr_dict = pos_dict_sv()
+        pos_descr_dict = pos_dict_sv_suc()
     
     n = 2 # LM ngram order. Use bigrams
     n_pos = pos_lm.counts.__len__() # POS LM ngram order
@@ -80,13 +80,17 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
             if word not in lm.vocab:
                 text[sent_idx][word_idx] = word+'*'+unk_mark
                 err_unk_count += 1
-                tag_to_use = pos_lm.counts.__getitem__(tags[sent_idx]
-                                                       [word_idx-2+(n_pos-1):
-                                                        word_idx+(n_pos-1)]).max()
-                errs_unk += str(err_unk_count) + '. ' + \
-                    word + ': try to replace with some ' + \
-                    pos_descr_dict[tag_to_use].lower() +\
-                            '.\n'
+                errs_unk += str(err_unk_count) + '. ' + word
+                next_tag_dict = pos_lm.counts.__getitem__(tags[sent_idx]
+                                                           [word_idx-2+(n_pos-1):
+                                                            word_idx+(n_pos-1)])
+                if len(next_tag_dict)>0:
+                    tag_to_use = next_tag_dict.max()
+                    errs_unk += ': try to replace with some ' + \
+                        pos_descr_dict[tag_to_use].lower() +\
+                                '.\n'
+                else:
+                    errs_unk += '??? \n'
     
     # Pad the sentences with start-of-sentence and end-of-sentence symbols
     text = [list(pad_both_ends(sent,n)) for sent in text]
