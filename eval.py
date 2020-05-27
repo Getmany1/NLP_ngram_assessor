@@ -1,18 +1,17 @@
 from nltk import word_tokenize, sent_tokenize
-from train_crf_pos import get_features
+from train_crf_pos import get_crf_features
 from nltk.util import ngrams
 from nltk.lm.preprocessing import pad_both_ends
 import copy
 import itertools
 import numpy as np
-from collections import Counter 
-from pos_descriptions import *
+from collections import Counter
 
 def tag(text, pos_tagger):
     """
     Tag text with parts of speech
     """
-    features = [get_features([word for word in sent]) for sent in text]
+    features = [get_crf_features([word for word in sent]) for sent in text]
     tags = pos_tagger.predict(features)
     tagged_text = []
     for i in range(len(text)):
@@ -42,15 +41,7 @@ def mean_logprob(context, pos_lm):
             logprobs.append(logprob)
     return np.mean(logprobs)    
 
-def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
-    
-    #
-    lang = 'swedish'
-    # Load the descriptions of POS tags
-    if lang == 'english':
-        pos_descr_dict = pos_dict_en()
-    elif lang == 'swedish':
-        pos_descr_dict = pos_dict_sv_suc()
+def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=float('-inf')):
     
     n = 2 # LM ngram order. Use bigrams
     n_pos = pos_lm.counts.__len__() # POS LM ngram order
@@ -86,11 +77,18 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
                                                             word_idx+(n_pos-1)])
                 if len(next_tag_dict)>0:
                     tag_to_use = next_tag_dict.max()
-                    errs_unk += ': try to replace with some ' + \
+                else:
+                    # If no corresponding POS trigrams found from the
+                    # POS LM (no tag t_i can follow the tag sequence
+                    # t_(i-2), t_(i-1)), use bigrams (search for the most
+                    # likely tag t_i given the previous tag t_(i-1))
+                    next_tag_dict = pos_lm.counts.__getitem__([tags[sent_idx]
+                                                           [word_idx-1+(n_pos-1)]])
+                    tag_to_use = next_tag_dict.max()
+
+                errs_unk += ': try to replace with some ' + \
                         pos_descr_dict[tag_to_use].lower() +\
                                 '.\n'
-                else:
-                    errs_unk += '??? \n'
     
     # Pad the sentences with start-of-sentence and end-of-sentence symbols
     text = [list(pad_both_ends(sent,n)) for sent in text]
@@ -155,13 +153,31 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, threshold=float('-inf')):
                                                            [i-2+(n_pos-1):
                                                             i+(n_pos-1)])
                         if len(next_tag_dict) > 0:
+                            tag_to_use = next_tag_dict.max()
                             errs += '; try to use another part of speech, for example ' + \
-                                pos_descr_dict[next_tag_dict.max()].lower() + \
+                                pos_descr_dict[tag_to_use].lower() + \
                                     '.\n'
+                            
                         else:
-                            # No tag t_i can follow the tag sequence
-                            # t_(i-2), t_(i-1)
-                            errs += '; ???\n'
+                            # If no corresponding POS trigrams found from the
+                            # POS LM (no tag t_i can follow the tag sequence
+                            # t_(i-2), t_(i-1)), use bigrams (search for the most
+                            # likely tag t_i given the previous tag t_(i-1))
+                            pos_logscore = pos_lm.logscore(tags[sent_idx][i +(n_pos-1)],
+                                                   [tags[sent_idx][i-1+(n_pos-1)]])
+                            avg_pos_logscore = mean_logprob([tags[sent_idx][i-1+(n_pos-1)]], pos_lm)
+                            if pos_logscore == -float('inf') or pos_logscore<avg_pos_logscore:
+                                next_tag_dict = pos_lm.counts.__getitem__([tags[sent_idx]
+                                                            [i-1+(n_pos-1)]])
+                                tag_to_use = next_tag_dict.max()
+
+                                errs += '; try to use another part of speech, for example ' + \
+                                    pos_descr_dict[tag_to_use].lower() + \
+                                        '.\n'
+                            else:
+                                errs += '; try to use some other ' + pos_descr_dict[tags[sent_idx]
+                                                                            [i +(n_pos-1)]].lower() + \
+                                ' instead of ' + ngram[-1] + '.\n'   
                     else:                           
                         errs += 'try to use some other ' + pos_descr_dict[tags[sent_idx]
                                                                           [i +(n_pos-1)]].lower() + \

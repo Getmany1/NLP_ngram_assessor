@@ -4,7 +4,7 @@ import nltk
 from sklearn_crfsuite import CRF, metrics
 import dill as pickle
 
-def get_features(sent):
+def get_crf_features(sent):
     return [{
         'word': sent[idx],
         'bias': True,
@@ -28,15 +28,10 @@ def get_features(sent):
         'has_hyphen': '-' in sent[idx],
     } for idx in range(len(sent))]
 
-def train_crf_pos(corpus):
-    #language = 'english'
+def train_crf_pos(corpus, corpus_name):
 
     # Required corpus structure:
     # [[(w1,t1), (w2,t2),...(wn,tn)], [(w1,t1)(w2,t2),...(wm,tm)],...]
-    #corpus_name = 'Penn_treebank'
-    #corpus_name = 'UD_Swedish-Talbanken'
-    corpus_name = 'Yle_sv_pos'
-    #corpus = nltk.corpus.treebank.tagged_sents()
 
     #feat_all = {} # common features (baseline set)
     #feat_en = {} # extra features for English
@@ -45,7 +40,7 @@ def train_crf_pos(corpus):
     split_idx = int(train_frac*len(corpus))
 
     # Extract the feautures and separate labels from features
-    X = [get_features([pair[0] for pair in sent]) for sent in corpus]
+    X = [get_crf_features([pair[0] for pair in sent]) for sent in corpus]
     y = [[pair[1] for pair in sent] for sent in corpus]
 
     # Create the training and the test sets
@@ -67,7 +62,7 @@ def train_crf_pos(corpus):
 
     # Save the model
     with open(os.path.join('data', 'models', corpus_name + '_crf.pkl'), 'wb') as f:
-        pickle.dump(model, f)
+        pickle.dump(model, f, 4)
 
     # Evaluate the model
     y_pred = model.predict(X_test)

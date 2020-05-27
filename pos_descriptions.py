@@ -94,7 +94,9 @@ def pos_dict_sv_suc():
     Source: https://spraakbanken.gu.se/parole/Docs/SUC2.0-manual.pdf
     """
     dict_1 = pos_dict_en()
-    dict_1.update({'PM': 'Proper Noun',
+    dict_1.update({'NN': 'Noun',
+            'VB': 'Verb',
+            'PM': 'Proper Noun',
             'PP': 'Preposition',
             'MAD': 'Major delimiter',
             'HP': 'Interrogative/Relative Pronoun',
