@@ -1,6 +1,7 @@
 from nltk import word_tokenize, sent_tokenize
 from train_crf_pos import get_crf_features
 from nltk.util import ngrams
+import morfessor
 from nltk.lm.preprocessing import pad_both_ends
 import copy
 import itertools
@@ -34,12 +35,61 @@ def tag(text, pos_tagger):
     return Counter(prob_dict).most_common(k)'''
 
 def mean_logprob(context, pos_lm):
+    """
+    Mean log-probability among all possible ngrams with 
+    fixed n-1 POS tags
+    """
     logprobs = []
     for tag in pos_lm.vocab:
         logprob = pos_lm.logscore(tag,context)
         if logprob != -float('inf'):
             logprobs.append(logprob)
-    return np.mean(logprobs)    
+    return np.mean(logprobs)
+
+def similar_words(word, morph_model, lm):
+    """
+    Search for similar words from the LM vocabulary
+    """
+    similar_words = []
+    nbest = 5
+    segmentations = [morph_model.viterbi_nbest(word, nbest)[i][0] \
+        for i in range(nbest)]
+    for segmented_word in segmentations:
+        word_to_search = max(segmented_word, key=len)
+        if segmented_word in lm.vocab and segmented_word \
+            not in similar_words:
+            similar_words.append(word_to_search)
+    return similar_words
+
+def similar_ngrams(ngram, morph_model, lm):
+    """
+    Search for similar ngrams from the LM
+    """
+    similar_ngrams = []
+    # Preserve only the longest segment after the word 
+    # segmentation
+    word1 = max(morph_model.viterbi_segment(ngram[0])[0], key=len)
+    word2 = max(morph_model.viterbi_segment(ngram[1])[0], key=len)
+    
+    similar_words_1 = []
+    similar_words_2 = []
+    # Collect the words from the LM vocabulary that contain
+    # the same segment as one of the words of the bigram
+    for word in lm.vocab:
+        if word1 in word:
+            similar_words_1.append(word)
+        elif word2 in word:
+            similar_words_2.append(word)
+    
+    # Make ngrams using all possible combinations of the
+    # words found from the LM vocabulary and return the ones
+    # that have non-zero probability
+    for pair in list(itertools.product(similar_words_1,\
+        similar_words_2)):
+        pos_logscore = lm.logscore(pair[1], [pair[0]])
+        if pos_logscore > -float('inf'):
+            similar_ngrams.append((pair[0], pair[1]))
+    return similar_ngrams
 
 def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=float('-inf')):
     
