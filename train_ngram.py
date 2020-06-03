@@ -7,7 +7,7 @@ import os
 
 def train_ngram(corpus, n, words=True):
     """
-    Train ngram language model from a corpus.
+    Train ngram (POS) language model from a corpus.
     """
     
     # Read the corpus file

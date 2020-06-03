@@ -51,47 +51,75 @@ def similar_words(word, morph_model, lm):
     Search for similar words from the LM vocabulary
     """
     similar_words = []
-    nbest = 5
-    segmentations = [morph_model.viterbi_nbest(word, nbest)[i][0] \
-        for i in range(nbest)]
+    nbest = min(5, len(word))
+    segmentations = [morph_model.viterbi_nbest(word, nbest)[i][0] for i in range(nbest)]
     for segmented_word in segmentations:
         word_to_search = max(segmented_word, key=len)
-        if segmented_word in lm.vocab and segmented_word \
-            not in similar_words:
+        if word_to_search in lm.vocab and word_to_search not in similar_words:
             similar_words.append(word_to_search)
     return similar_words
 
-def similar_ngrams(ngram, morph_model, lm):
+def similar_ngrams(ngram, morph_model, lm, nbest):
     """
     Search for similar ngrams from the LM
     """
-    similar_ngrams = []
-    # Preserve only the longest segment after the word 
-    # segmentation
-    word1 = max(morph_model.viterbi_segment(ngram[0])[0], key=len)
-    word2 = max(morph_model.viterbi_segment(ngram[1])[0], key=len)
+    w1 = ngram[0]
+    w2 = ngram[1]
+    nbest_max = 3 # Limit for number of segmentations/word
+    sim_ngrams = []
+    
+    # Preserve only the longest segment of each segmentation
+    viterbi_nbest_1 = morph_model.viterbi_nbest(w1, nbest)
+    viterbi_nbest_2 = morph_model.viterbi_nbest(w2, nbest)
+    segmentations1 = [max([viterbi_nbest_1[i][0] 
+                           for i in range(len(viterbi_nbest_1))][j], key=len) 
+                      for j in range(len(viterbi_nbest_1))]
+    segmentations2 = [max([viterbi_nbest_2[i][0] 
+                           for i in range(len(viterbi_nbest_2))][j], key=len) 
+                      for j in range(len(viterbi_nbest_2))]
+    
+    # Remove duplicates and too short word segments
+    segmentations1 = [segment for segment in list(dict.fromkeys(segmentations1)) 
+                      if len(segment)>=min(3,len(w1))]
+    segmentations2 = [segment for segment in list(dict.fromkeys(segmentations2)) 
+                      if len(segment)>=min(3,len(w2))]
+    
+    #print(segmentations1)
+    #print(segmentations2)
     
     similar_words_1 = []
     similar_words_2 = []
+    
     # Collect the words from the LM vocabulary that contain
     # the same segment as one of the words of the bigram
     for word in lm.vocab:
-        if word1 in word:
-            similar_words_1.append(word)
-        elif word2 in word:
-            similar_words_2.append(word)
+        for word1 in segmentations1:
+            if word1 in word:
+                similar_words_1.append(word)
+        for word2 in segmentations2:
+            if word2 in word:
+                similar_words_2.append(word)
     
     # Make ngrams using all possible combinations of the
     # words found from the LM vocabulary and return the ones
     # that have non-zero probability
-    for pair in list(itertools.product(similar_words_1,\
-        similar_words_2)):
+    for pair in list(itertools.product(similar_words_1, similar_words_2)):
         pos_logscore = lm.logscore(pair[1], [pair[0]])
         if pos_logscore > -float('inf'):
-            similar_ngrams.append((pair[0], pair[1]))
-    return similar_ngrams
+            sim_ngrams.append(pair[0] + ' ' + pair[1])
+        if len(sim_ngrams) > 4:
+            break
+    
+    # If no similar ngrams, try one more time with more word segmentations
+    if not sim_ngrams and nbest<nbest_max:
+        nbest += 1
+        sim_ngrams = similar_ngrams(ngram, morph_model, lm, nbest)
+    
+    # Remove duplicates
+    sim_ngrams = list(dict.fromkeys(sim_ngrams))
+    return sim_ngrams
 
-def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=float('-inf')):
+def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, threshold=float('-inf')):
     
     n = 2 # LM ngram order. Use bigrams
     n_pos = pos_lm.counts.__len__() # POS LM ngram order
@@ -111,8 +139,9 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
     text = [[word.lower() for word in sent] for sent in text]
 
     # Highlight OOV words with *UNK* ('word' -> 'word*<UNK>')
-    # Predict the most likely POS tag t_i for the unkwown word w_i based on the
-    # sequence of previous tags t_(i-2), t_(i-1) using the POS LM
+    # Search for similar words from the LM vocabulary
+    # Also, predict the most likely POS tag t_i for the unkwown word w_i based 
+    # on the sequence of previous tags t_(i-2), t_(i-1) using the POS LM
     errs_unk = ""
     err_unk_count = 0
     unk_mark = '<UNK>'
@@ -122,6 +151,15 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
                 text[sent_idx][word_idx] = word+'*'+unk_mark
                 err_unk_count += 1
                 errs_unk += str(err_unk_count) + '. ' + word
+                
+                sim_words = similar_words(word, morph_model, lm)
+                if similar_words:
+                    errs_unk += '. Similar words: ' + ', '.join(sim_words) \
+                        + '. You can also try to replace the word with some '
+                else:
+                    errs_unk += '. No similar words found from the vocabulary, ' \
+                        + 'try to replace with some '
+                    
                 next_tag_dict = pos_lm.counts.__getitem__(tags[sent_idx]
                                                            [word_idx-2+(n_pos-1):
                                                             word_idx+(n_pos-1)])
@@ -135,10 +173,8 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
                     next_tag_dict = pos_lm.counts.__getitem__([tags[sent_idx]
                                                            [word_idx-1+(n_pos-1)]])
                     tag_to_use = next_tag_dict.max()
-
-                errs_unk += ': try to replace with some ' + \
-                        pos_descr_dict[tag_to_use].lower() +\
-                                '.\n'
+                
+                errs_unk += pos_descr_dict[tag_to_use].lower() + '.\n'
     
     # Pad the sentences with start-of-sentence and end-of-sentence symbols
     text = [list(pad_both_ends(sent,n)) for sent in text]
@@ -166,15 +202,25 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
                     
                     evaluated[sent_idx][i+n-1] += '*' + str(err_count)
                     
+                    """ 
                     # Suggest 3 most likely words to replace the last word of 
                     # the unknown ngram based on its previous word(s)
-                    #next_word = ', '.join([pair[0] for pair in 
-                    #             Counter(lm.counts.__getitem__(ngram[:-1])).most_common(3)])
-                    #errs += str(err_count) + '. ' + \
-                    #     ' '.join(text[sent_idx][i:i+n]) + ': try to replace the word '\
-                    #         +ngram[-1] + ' with some other word like ' + next_word + '.\n'
+                    next_word = ', '.join([pair[0] for pair in 
+                                 Counter(lm.counts.__getitem__(ngram[:-1])).most_common(3)])
+                    errs += str(err_count) + '. ' + \
+                         ' '.join(text[sent_idx][i:i+n]) + ': try to replace the word '\
+                             +ngram[-1] + ' with some other word like ' + next_word + '.\n'
+                    """
                       
-                    errs += str(err_count) + '. ' + ' '.join(ngram) + ': '
+                    errs += str(err_count) + '. ' + ' '.join(ngram)
+                    
+                    # Search for similar ngrams and suggest at most 5 examples
+                    sim_ngrams = similar_ngrams(ngram, morph_model, lm, 1)
+                    if sim_ngrams:
+                        errs += '. Similar ngrams: ' + ', '.join(sim_ngrams) + '. ' #+ \
+                            #'. You can also '
+                    else:
+                        errs += '. No similar ngrams found from the language model. '
                     
                     # If tag t_i cannot follow the tag sequence t_(i-2), t_(i-1)
                     # (P(t_i)|t_(i-2),t_(i-1)=0), suggest the most likely tag
@@ -196,7 +242,7 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
                                                                        i +(n_pos-1)],
                                                         pos_lm)
                     if pos_logscore == -float('inf') or pos_logscore<avg_pos_logscore:
-                        errs += 'you used the ' + pos_descr_dict[tags[sent_idx]
+                        errs += 'You used the ' + pos_descr_dict[tags[sent_idx]
                                                                  [i +(n_pos-1)]].lower() + ' ' + \
                             ngram[-1]
                         next_tag_dict = pos_lm.counts.__getitem__(tags[sent_idx]
@@ -204,7 +250,7 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
                                                             i+(n_pos-1)])
                         if len(next_tag_dict) > 0:
                             tag_to_use = next_tag_dict.max()
-                            errs += '; try to use another part of speech, for example ' + \
+                            errs += '. Try to use another part of speech, for example ' + \
                                 pos_descr_dict[tag_to_use].lower() + \
                                     '.\n'
                             
@@ -221,17 +267,17 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, pos_descr_dict, threshold=floa
                                                             [i-1+(n_pos-1)]])
                                 tag_to_use = next_tag_dict.max()
 
-                                errs += '; try to use another part of speech, for example ' + \
+                                errs += '. Try to use another part of speech, for example ' + \
                                     pos_descr_dict[tag_to_use].lower() + \
                                         '.\n'
                             else:
-                                errs += '; try to use some other ' + pos_descr_dict[tags[sent_idx]
+                                errs += '. You can also try to use some other ' + pos_descr_dict[tags[sent_idx]
                                                                             [i +(n_pos-1)]].lower() + \
                                 ' instead of ' + ngram[-1] + '.\n'   
                     else:                           
-                        errs += 'try to use some other ' + pos_descr_dict[tags[sent_idx]
+                        errs += 'You can also try to use some other ' + pos_descr_dict[tags[sent_idx]
                                                                           [i +(n_pos-1)]].lower() + \
-                            ' instead of ' + ngram[-1] + '.\n'        
+                            ' instead of ' + ngram[-1] + '.\n'
             i += 1
 
     # Print the evaluation results
