@@ -55,7 +55,7 @@ pos_lm_name = 'wikipedia_sv_pos_3gram.pkl'
 #pos_lm_name = 'Yle_sv_pos_3gram.pkl'
 
 # Morfessor models
-morph_model = 'yle_sv_minicorpus'
+morph_model = 'yle_sv_minicorpus_morph'
 
 # POS Taggers
 # ENGLISH
