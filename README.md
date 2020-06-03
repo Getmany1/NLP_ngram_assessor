@@ -6,24 +6,27 @@ https://drive.google.com/open?id=1vh1SMU1g5Wd7xsRH8UoHVlOk50K9vSqH
   
   ## Example
   ### Example text to evaluate
-  "This is a test text. The automatic assessor will report OOV words and uncommon ngrams."
+  "Oavsett regleringen i gymnasieskolans styrdokument att beakta samtliga kommunikativa delfärdigheter, saknas det muntliga testet
+  fortfarande i den finländska studentexamen."
   
   ### Script output:
   
 Text to evaluate: 
-This is a test text. The automatic assessor will report OOV words and uncommon what ngrams.
+Oavsett regleringen i gymnasieskolans styrdokument att beakta samtliga kommunikativa delfärdigheter, saknas det muntliga testet fortfarande i den finländska studentexamen.
 
 (For human evaluator) Text tagged with part-of-speech tags: 
-[[('This', 'DT'), ('is', 'VBZ'), ('a', 'DT'), ('test', 'NN'), ('text', 'NN'), ('.', '.')], [('The', 'DT'), ('automatic', 'JJ'), ('assessor', 'NN'), ('will', 'MD'), ('report', 'VB'), ('OOV', 'NNP'), ('words', 'NNS'), ('and', 'CC'), ('uncommon', 'JJ'), ('what', 'WP'), ('ngrams', 'NNS'), ('.', '.')]]
+[[('Oavsett', 'ADJ'), ('regleringen', 'NOUN'), ('i', 'ADP'), ('gymnasieskolans', 'NOUN'), ('styrdokument', 'NOUN'), ('att', 'PART'), ('beakta', 'VERB'), ('samtliga', 'ADJ'), ('kommunikativa', 'ADJ'), ('delfärdigheter', 'NOUN'), (',', 'PUNCT'), ('saknas', 'VERB'), ('det', 'DET'), ('muntliga', 'ADJ'), ('testet', 'NOUN'), ('fortfarande', 'ADV'), ('i', 'ADP'), ('den', 'DET'), ('finländska', 'ADJ'), ('studentexamen', 'NOUN'), ('.', 'PUNCT')]]
 
 Analyzed text with annotations: 
-this is a test text . the automatic assessor\*1 will\*2 report oov*\<UNK> words and uncommon  what\*3 ngrams*\<UNK> .
+oavsett regleringen\*1 i gymnasieskolans\*<UNK> styrdokument att\*2 beakta samtliga kommunikativa\*3 delfärdigheter\*<UNK> , saknas det muntliga testet\*4 fortfarande\*5 i den finländska studentexamen .
 
 Unknown words: 
-1. oov: try to replace with some determiner.
-2. ngrams: try to replace with some verb (past tense).
+1. gymnasieskolans. Similar words: gymnasie, gymnasieskola. You can also try to replace the word with some noun.
+2. delfärdigheter. Similar words: färdigheter, färdig, färdighet. You can also try to replace the word with some noun.
 
 Uncommon ngrams: 
-1. automatic assessor: try to use some other noun (singular or mass) instead of assessor.
-2. assessor will: try to use some other modal instead of will.
-3. uncommon what: you used the wh-pronoun what; try to use another part of speech, for example noun (singular or mass).
+1. oavsett regleringen. Similar ngrams: sett reglering. You used the noun regleringen. You can also try to use some other noun instead of regleringen.
+2. styrdokument att. Similar ngrams: dokumentärfilmen att, dokumenten att, dokumentera att, dokumentär att, dokument att. You used the particle att. Try to use another part of speech, for example adposition.
+3. samtliga kommunikativa. Similar ngrams: samt kommunikativa. You can also try to use some other adjective instead of kommunikativa.
+4. muntliga testet. Similar ngrams: egentliga testerna, offentliga protesterna, offentliga missiltestet, ordentliga test. You can also try to use some other noun instead of testet.
+5. testet fortfarande. Similar ngrams: protesterar fortfarande, testas fortfarande, testerna fortfarande. You can also try to use some other adverb instead of fortfarande.
