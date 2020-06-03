@@ -19,7 +19,7 @@ def train_morfessor(corpus, split_prob):
 
     model_tokens.train_batch()
     
-    io.write_binary_model_file(os.path.join('data','models', corpus[:-4] + 'init_rand_split_0.9'), 
+    io.write_binary_model_file(os.path.join('data','models', corpus[:-4] + '_morph'), 
                                model_tokens)
     
     return model_tokens
