@@ -87,7 +87,9 @@ def similar_ngrams(ngram, morph_model, lm, nbest):
     #print(segmentations1)
     #print(segmentations2)
     
-    similar_words_1 = []
+    # Put the first word of the bigram itself (w1) to the beginning of the list
+    # of words similar to w1.
+    similar_words_1 = [w1]
     similar_words_2 = []
     
     # Collect the words from the LM vocabulary that contain
@@ -102,7 +104,9 @@ def similar_ngrams(ngram, morph_model, lm, nbest):
     
     # Make ngrams using all possible combinations of the
     # words found from the LM vocabulary and return the ones
-    # that have non-zero probability
+    # that have non-zero probability. Because w1 itself is in the beginning of
+    # the list of words similar to w1, bigrams with non-zero probability
+    # [w1, _ ] will be returned first (if such bigrams exist)
     for pair in list(itertools.product(similar_words_1, similar_words_2)):
         pos_logscore = lm.logscore(pair[1], [pair[0]])
         if pos_logscore > -float('inf'):
