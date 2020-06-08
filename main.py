@@ -1,11 +1,11 @@
 import os
-import nltk
 import dill as pickle
 from train_ngram import train_ngram
 from train_crf_pos import train_crf_pos
-from train_morfessor import *
+from train_morfessor import train_morfessor
 from eval import eval
 from pos_descriptions import *
+import morfessor
 
 # Parameters
 lang = 'swedish'
@@ -55,7 +55,8 @@ pos_lm_name = 'wikipedia_sv_pos_3gram.pkl'
 #pos_lm_name = 'Yle_sv_pos_3gram.pkl'
 
 # Morfessor models
-morph_model = 'yle_sv_minicorpus_morph'
+#morph_model = 'yle_sv_minicorpus_morph'
+morph_model = 'Yle_sv_morph'
 
 # POS Taggers
 # ENGLISH

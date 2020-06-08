@@ -72,7 +72,7 @@ def similar_ngrams(ngram, morph_model, lm, nbest):
     viterbi_nbest_1 = morph_model.viterbi_nbest(w1, nbest)
     viterbi_nbest_2 = morph_model.viterbi_nbest(w2, nbest)
     segmentations1 = [max([viterbi_nbest_1[i][0] 
-                           for i in range(len(viterbi_nbest_1))][j], key=len) 
+                           for i in range(len(viterbi_nbest_1))][j], key=len)
                       for j in range(len(viterbi_nbest_1))]
     segmentations2 = [max([viterbi_nbest_2[i][0] 
                            for i in range(len(viterbi_nbest_2))][j], key=len) 
@@ -108,9 +108,9 @@ def similar_ngrams(ngram, morph_model, lm, nbest):
     # the list of words similar to w1, bigrams with non-zero probability
     # [w1, _ ] will be returned first (if such bigrams exist)
     for pair in list(itertools.product(similar_words_1, similar_words_2)):
-        pos_logscore = lm.logscore(pair[1], [pair[0]])
-        if pos_logscore > -float('inf'):
-            sim_ngrams.append(pair[0] + ' ' + pair[1])
+        logscore = lm.logscore(pair[1], [pair[0]])
+        if logscore > -float('inf'):
+            sim_ngrams.append(pair[0] + ' ' + pair[1])# + ' ' + str(round(logscore)))
         if len(sim_ngrams) > 4:
             break
     
