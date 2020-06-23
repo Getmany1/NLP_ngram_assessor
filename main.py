@@ -6,6 +6,7 @@ from train_morfessor import train_morfessor
 from eval import eval
 from pos_descriptions import *
 import morfessor
+from stanza import Pipeline
 
 # Parameters
 lang = 'swedish'
@@ -65,6 +66,10 @@ morph_model = 'Yle_sv_morph'
 pos_name = 'UD_Swedish-Talbanken_crf.pkl'
 #pos_name = 'Yle_sv_pos_crf.pkl'
 
+# POS processors for extracting morphological features
+# SWEDISH
+nlp = Pipeline(lang='sv', processors='tokenize,mwt,pos')
+
 lm_type = 'ngram' # language model type
 pos_lm_type = 'ngram' # POS language model type
 n = 2 # ngram size for LM
@@ -122,7 +127,8 @@ elif pos_name == 'UD_Swedish-Talbanken_crf.pkl':
 elif pos_name == 'Yle_sv_pos_crf.pkl':
     pos_descr_dict = pos_dict_sv_suc()
 
-eval_result = eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, threshold)
+eval_result = eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp, 
+                   pos_descr_dict, threshold)
 if SAVE_REPORT:
     with open(os.path.join('results', result_file), 'w', encoding='utf-8') as f:
             f.write(eval_result)

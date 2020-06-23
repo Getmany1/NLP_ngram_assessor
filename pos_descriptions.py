@@ -66,7 +66,7 @@ def pos_dict_en():
             "''": 'Empty tag'
     }
 
-def pos_dict_sv():
+def pos_dict_sv(): #UPOS
     return {'ADJ': 'Adjective',
             'ADP': 'Adposition',
             'ADV': 'Adverb',

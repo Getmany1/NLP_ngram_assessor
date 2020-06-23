@@ -123,7 +123,68 @@ def similar_ngrams(ngram, morph_model, lm, nbest):
     sim_ngrams = list(dict.fromkeys(sim_ngrams))
     return sim_ngrams
 
-def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, threshold=float('-inf')):
+def extract_feats(word, nlp):
+    """
+    Extract morphological features of a single word
+    """
+    feat_dict = {}
+    feat_string = ''
+    doc = nlp(word).to_dict()[0][0]
+    if 'feats' in doc:
+        for pair in doc['feats'].split('|'):
+            feat, val = pair.split('=')
+            feat_dict[feat] = val
+            feat_string += feat + ': ' + val + ', '
+    if feat_string:
+        feat_string = ' (' + feat_string[:-2] + ')'
+    return feat_dict, feat_string
+    
+def morph_features(prev_word, pos, nlp, lm):
+    """
+    Define morphological features of the next word based on the previous word
+    """
+    feat_string = ''
+    feat_dict = {}
+    # Collect 15 words which are most likely to follow the previous word w_(i-1)
+    # according to the LM and preserve only the ones that belong to the same
+    # part of speech as the current word w_i
+    for word, counts in lm.counts.__getitem__([prev_word]).most_common(20):
+        doc = nlp(word).to_dict()[0][0]
+        if 'feats' in doc and (doc['upos'] == pos or doc['xpos'].split('|')[0] == pos):
+            for pair in doc['feats'].split('|'):
+                feat, val = pair.split('=')
+                if feat in feat_dict:
+                    feat_dict[feat].append(val)
+                else:
+                    feat_dict[feat] = [val]
+    #print(feat_dict)
+    # Find the most common value for each feature
+    for dict_key in feat_dict.keys():
+        feat_string += dict_key + ': ' + max(set(feat_dict[dict_key]), 
+                                        key = feat_dict[dict_key].count) + ', '
+    if feat_string:
+        feat_string = ' (' + feat_string[:-2] + ')'
+    return feat_dict, feat_string
+
+def compare_feats(feat_dict_to_check, feat_dict_correct):
+    """
+    Check if morphological features of a word can apply to any other words that
+    can replace it. Return a string of features with most common values 
+    """
+    corrected_feats_string = ''
+    for dict_key in feat_dict_correct.keys():
+        if dict_key not in feat_dict_to_check or feat_dict_to_check[dict_key] \
+            not in feat_dict_correct[dict_key]:
+                corrected_feats_string += dict_key + ': ' + \
+                    max(set(feat_dict_correct[dict_key]), 
+                        key = feat_dict_correct[dict_key].count) + ', '
+    if corrected_feats_string:
+        corrected_feats_string = corrected_feats_string[:-2]
+    #print(corrected_feats_string)
+    return corrected_feats_string
+            
+def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp, 
+         pos_descr_dict, threshold=float('-inf')):
     
     n = 2 # LM ngram order. Use bigrams
     n_pos = pos_lm.counts.__len__() # POS LM ngram order
@@ -146,6 +207,8 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, t
     # Search for similar words from the LM vocabulary
     # Also, predict the most likely POS tag t_i for the unkwown word w_i based 
     # on the sequence of previous tags t_(i-2), t_(i-1) using the POS LM
+    # In addition to the POS tag, suggest also most likely values for 
+    # morphological features
     errs_unk = ""
     err_unk_count = 0
     unk_mark = '<UNK>'
@@ -178,7 +241,10 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, t
                                                            [word_idx-1+(n_pos-1)]])
                     tag_to_use = next_tag_dict.max()
                 
-                errs_unk += pos_descr_dict[tag_to_use].lower() + '.\n'
+                _, morph_feat_string = morph_features(text[sent_idx][word_idx-1],
+                                                      tag_to_use, nlp, lm)
+                errs_unk += pos_descr_dict[tag_to_use].lower() + \
+                    morph_feat_string + '.\n'
     
     # Pad the sentences with start-of-sentence and end-of-sentence symbols
     text = [list(pad_both_ends(sent,n)) for sent in text]
@@ -237,26 +303,40 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, t
                     # the average, suppose that the tag sequence is common enough
                     # and suggest to replace the last word of the corresponding
                     # word sequence with another word belonging to the same
-                    # part of speech. If it is below the average, ask to use
-                    # another part of speech and suggest the most likely tag.
+                    # part of speech. In this case, check also the morphological
+                    # features of the last word of the sequence; ask to pay 
+                    # attention to those features for which the current value
+                    # is most probably incorrect.
+                    # If the log probability is below the average, ask to use
+                    # another part of speech and suggest the most likely POS tag
+                    # with most likely set of morphological features.
                     pos_logscore = pos_lm.logscore(tags[sent_idx][i +(n_pos-1)],
                                                    tags[sent_idx][i-2+(n_pos-1):
                                                          i +(n_pos-1)])
                     avg_pos_logscore = mean_logprob(tags[sent_idx][i-2+(n_pos-1):
                                                                        i +(n_pos-1)],
                                                         pos_lm)
+                    feat_dict_to_check, morph_feat_string = extract_feats(ngram[-1], nlp)
+                    #feat_dict_correct, feat_string = morph_features(text[sent_idx][i-1],
+                    #                                                tag_to_use,
+                    #                                                nlp, lm)
+                    errs += 'You used the ' + pos_descr_dict[tags[sent_idx]
+                                                             [i +(n_pos-1)]].lower() + ' ' + \
+                        ngram[-1] + morph_feat_string + '. '
                     if pos_logscore == -float('inf') or pos_logscore<avg_pos_logscore:
-                        errs += 'You used the ' + pos_descr_dict[tags[sent_idx]
-                                                                 [i +(n_pos-1)]].lower() + ' ' + \
-                            ngram[-1]
+                        #errs += 'You used the ' + pos_descr_dict[tags[sent_idx]
+                        #                                         [i +(n_pos-1)]].lower() + ' ' + \
+                        #    ngram[-1]
                         next_tag_dict = pos_lm.counts.__getitem__(tags[sent_idx]
                                                            [i-2+(n_pos-1):
                                                             i+(n_pos-1)])
                         if len(next_tag_dict) > 0:
                             tag_to_use = next_tag_dict.max()
-                            errs += '. Try to use another part of speech, for example ' + \
+                            feat_dict_correct, feat_string = morph_features(text[sent_idx][i],
+                                                            tag_to_use, nlp, lm)
+                            errs += 'Try to use another part of speech, for example ' + \
                                 pos_descr_dict[tag_to_use].lower() + \
-                                    '.\n'
+                                    feat_string + '.\n'
                             
                         else:
                             # If no corresponding POS trigrams found from the
@@ -270,18 +350,38 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, pos_descr_dict, t
                                 next_tag_dict = pos_lm.counts.__getitem__([tags[sent_idx]
                                                             [i-1+(n_pos-1)]])
                                 tag_to_use = next_tag_dict.max()
-
-                                errs += '. Try to use another part of speech, for example ' + \
+                                feat_dict_correct, feat_string = morph_features(text[sent_idx][i],
+                                                                tag_to_use, nlp, lm)
+                                errs += 'Try to use another part of speech, for example ' + \
                                     pos_descr_dict[tag_to_use].lower() + \
-                                        '.\n'
+                                        feat_string + '.\n'
                             else:
-                                errs += '. You can also try to use some other ' + pos_descr_dict[tags[sent_idx]
+                                errs += 'You can also try to use some other ' + pos_descr_dict[tags[sent_idx]
                                                                             [i +(n_pos-1)]].lower() + \
-                                ' instead of ' + ngram[-1] + '.\n'   
-                    else:                           
+                                ' instead of ' + ngram[-1] + '. '
+                                feat_dict_correct, feat_string = morph_features(text[sent_idx][i],
+                                                                      tags[sent_idx][i+(n_pos-1)],
+                                                                      nlp, lm)
+                                corr_feat_string = compare_feats(feat_dict_to_check,
+                                                                 feat_dict_correct)
+                                if corr_feat_string:
+                                    errs += 'However, some morph. features are' \
+                                    ' used incorrectly; here are those features' \
+                                    ' with corrected values: ' + corr_feat_string + '.'
+                                errs += '\n'
+                    else:      
                         errs += 'You can also try to use some other ' + pos_descr_dict[tags[sent_idx]
                                                                           [i +(n_pos-1)]].lower() + \
-                            ' instead of ' + ngram[-1] + '.\n'
+                            ' instead of ' + ngram[-1] + '. '
+                        feat_dict_correct, feat_string = morph_features(text[sent_idx][i],
+                                                              tags[sent_idx][i+(n_pos-1)], nlp, lm)
+                        corr_feat_string = compare_feats(feat_dict_to_check,
+                                                         feat_dict_correct)
+                        if corr_feat_string:
+                            errs += 'However, some morph. features are used ' \
+                            'incorrectly; here are those features with ' \
+                            'corrected values: ' + corr_feat_string + '.'
+                        errs += '\n'
             i += 1
 
     # Print the evaluation results
