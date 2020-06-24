@@ -40,13 +40,14 @@ pos_corpus = 'UD_Swedish-Talbanken.pkl' #source: https://universaldependencies.o
 
 # Language Models
 # ENGLISH
-#lm_name = 'iltalehti_2gram.pkl'
 #lm_name = 'wikipedia2008_en_3gram.pkl'
 #lm_name = 'wikipedia2008_en_2gram.pkl'
 # SWEDISH
 #lm_name = 'wikipedia_sv_2gram.pkl'
 #lm_name = 'wikipedia_sv_3gram.pkl'
 lm_name = 'Yle_sv_2gram.pkl'
+# FINNISH
+#lm_name = 'iltalehti_2gram.pkl'
 
 # POS Language Models
 # ENGLISH
@@ -69,6 +70,8 @@ pos_name = 'UD_Swedish-Talbanken_crf.pkl'
 # POS processors for extracting morphological features
 # SWEDISH
 nlp = Pipeline(lang='sv', processors='tokenize,mwt,pos')
+# FINNISH
+#nlp = Pipeline(lang='fi', processors='tokenize,mwt,pos')
 
 lm_type = 'ngram' # language model type
 pos_lm_type = 'ngram' # POS language model type

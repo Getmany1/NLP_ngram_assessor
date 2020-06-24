@@ -365,8 +365,8 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp,
                                 corr_feat_string = compare_feats(feat_dict_to_check,
                                                                  feat_dict_correct)
                                 if corr_feat_string:
-                                    errs += 'However, some morph. features are' \
-                                    ' used incorrectly; here are those features' \
+                                    errs += 'However, some morph. features seem' \
+                                    ' to be incorrect; here are those features' \
                                     ' with corrected values: ' + corr_feat_string + '.'
                                 errs += '\n'
                     else:      
@@ -378,8 +378,8 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp,
                         corr_feat_string = compare_feats(feat_dict_to_check,
                                                          feat_dict_correct)
                         if corr_feat_string:
-                            errs += 'However, some morph. features are used ' \
-                            'incorrectly; here are those features with ' \
+                            errs += 'However, some morph. features seem to be ' \
+                            'incorrect; here are those features with ' \
                             'corrected values: ' + corr_feat_string + '.'
                         errs += '\n'
             i += 1
