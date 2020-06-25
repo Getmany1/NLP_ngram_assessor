@@ -144,7 +144,7 @@ else:
 # Load the descriptions of POS tags
 if pos_name == 'Penn_treebank_crf.pkl':
     pos_descr_dict = pos_dict_en()
-elif pos_name == 'UD_Swedish-Talbanken_crf.pkl':
+elif pos_name == 'UD_Swedish-Talbanken_crf.pkl' or pos_name == 'Wikipedia_fi_2017_words_tags_crf.pkl':
     pos_descr_dict = pos_dict_sv()
 elif pos_name == 'Yle_sv_pos_crf.pkl':
     pos_descr_dict = pos_dict_sv_suc()
