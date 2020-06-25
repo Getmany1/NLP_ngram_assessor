@@ -19,6 +19,8 @@ model_dir = os.path.join('data', 'models')
 # SWEDISH
 lm_corpus_name = 'wikipedia_sv.txt' #source: https://linguatools.org/
 #lm_corpus_name = 'Yle_sv.pkl' #source: Kielipankki
+# FINNISH
+#lm_corpus_name = 'Wikipedia_fi_2017.pkl' #source: Kielipankki
 
 # Text corpora for training POS LMs
 # ENGLISH
@@ -26,9 +28,15 @@ lm_corpus_name = 'wikipedia_sv.txt' #source: https://linguatools.org/
 # SWEDISH
 pos_lm_corpus_name = 'Yle_sv_pos.pkl'
 #pos_lm_corpus_name = 'wikipedia_sv_pos.txt'
+# FINNISH
+#pos_lm_corpus_name = 'Wikipedia_fi_2017_pos.pkl'
 
-# Smaller text corpora for training Morfessor models
+# Text corpora for training Morfessor models
+# SWEDISH
 morph_corpus = 'yle_sv_minicorpus.txt'
+#morph_corpus = 'Yle_sv.txt'
+# FINNISH
+#morph_corpus = 'Wikipedia_fi_2017.txt'
 
 # POS-tagged corpora for training POS taggers
 # ENGLISH
@@ -37,6 +45,8 @@ morph_corpus = 'yle_sv_minicorpus.txt'
 # SWEDISH
 pos_corpus = 'UD_Swedish-Talbanken.pkl' #source: https://universaldependencies.org/
 #pos_corpus = 'Yle_sv_words_tags.pkl
+# FINNISH
+#pos_corpus = 'Wikipedia_fi_2017_words_tags.pkl'
 
 # Language Models
 # ENGLISH
@@ -48,6 +58,8 @@ pos_corpus = 'UD_Swedish-Talbanken.pkl' #source: https://universaldependencies.o
 lm_name = 'Yle_sv_2gram.pkl'
 # FINNISH
 #lm_name = 'iltalehti_2gram.pkl'
+#lm_name = 'Wikipedia_fi_2017_2gram.pkl'
+#lm_name = 'Wikipedia_fi_2017_3gram.pkl'
 
 # POS Language Models
 # ENGLISH
@@ -55,10 +67,15 @@ lm_name = 'Yle_sv_2gram.pkl'
 # SWEDISH
 pos_lm_name = 'wikipedia_sv_pos_3gram.pkl'
 #pos_lm_name = 'Yle_sv_pos_3gram.pkl'
+# FINNISH
+#pos_lm_name = 'Wikipedia_fi_2017_pos_3gram.pkl'
 
 # Morfessor models
+# SWEDISH
 #morph_model = 'yle_sv_minicorpus_morph'
 morph_model = 'Yle_sv_morph'
+# FINNISH
+#morph_model = ...
 
 # POS Taggers
 # ENGLISH
@@ -66,12 +83,14 @@ morph_model = 'Yle_sv_morph'
 # SWEDISH
 pos_name = 'UD_Swedish-Talbanken_crf.pkl'
 #pos_name = 'Yle_sv_pos_crf.pkl'
+# FINNISH
+#pos_name = 'Wikipedia_fi_2017_words_tags_crf.pkl'
 
 # POS processors for extracting morphological features
 # SWEDISH
-nlp = Pipeline(lang='sv', processors='tokenize,mwt,pos')
+nlp = Pipeline(lang='sv', processors='tokenize,mwt,pos') #source: https://stanfordnlp.github.io/stanza/
 # FINNISH
-#nlp = Pipeline(lang='fi', processors='tokenize,mwt,pos')
+#nlp = Pipeline(lang='fi', processors='tokenize,mwt,pos') #source: https://stanfordnlp.github.io/stanza/
 
 lm_type = 'ngram' # language model type
 pos_lm_type = 'ngram' # POS language model type
@@ -100,7 +119,7 @@ else:
 
 if TRAIN_POS_LM:
     if pos_lm_type == 'ngram':
-        pos_lm = train_ngram(lm_corpus_name, n, words=True)
+        pos_lm = train_ngram(pos_lm_corpus_name, n_pos, words=False)
 else:
     with open(os.path.join(model_dir, pos_lm_name), 'rb') as f:
         pos_lm = pickle.load(f)  
