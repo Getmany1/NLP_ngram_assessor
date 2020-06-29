@@ -27,6 +27,8 @@ for sent_idx, sent in enumerate(text):
          morph_model.viterbi_nbest(word.lower(),1)[0][0]]
     text_segmented.append(sent_segmented)
     
+print(len(text_segmented))
 # Save the corpus
+print('saving...')
 with open(os.path.join('data','corpora', corpus[-4:] + '_morph_segmented.pkl'), 'wb') as f:
-    pickle.dump(corpus, f, 4)
+    pickle.dump(text_segmented, f, 4)

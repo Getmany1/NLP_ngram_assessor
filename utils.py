@@ -35,7 +35,7 @@ def morph_segment(corpus, morph_model):
     
     # Save the corpus
     with open(os.path.join('data','corpora', corpus[-4:] + '_morph_segmented.pkl'), 'wb') as f:
-        pickle.dump(corpus, f, 4)
+        pickle.dump(text_segmented, f, 4)
         
 def conllu2list():
     """
