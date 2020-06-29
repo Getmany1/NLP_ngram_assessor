@@ -6,6 +6,37 @@ from nltk import word_tokenize, sent_tokenize
 import dill as pickle
 from conllu import parse
 
+def morph_segment(corpus, morph_model):
+    """
+    Divide the words in the corpus into segments and save as a separate corpus
+    """
+    text_segmented = []
+    
+    # Read the corpus file
+    if corpus[-4:] == '.txt':
+        with open(os.path.join('data','corpora',corpus), encoding='utf8') as f:
+            text = f.read()
+
+    elif corpus[-4:] == '.pkl':
+        with open(os.path.join('data','corpora',corpus), 'rb') as f:
+            text = pickle.load(f)
+            
+    if type(text) is str:
+        text = text.lower()
+        text = sent_tokenize(text)
+        text = [word_tokenize(sent) for sent in text]
+
+    for sent_idx, sent in enumerate(text):
+        sent_segmented = []
+        for word_idx, word in enumerate(sent):
+            [sent_segmented.append(segment) for segment in
+             morph_model.viterbi_nbest(word.lower(),1)[0][0]]
+        text_segmented.append(sent_segmented)
+    
+    # Save the corpus
+    with open(os.path.join('data','corpora', corpus[-4:] + '_morph_segmented.pkl'), 'wb') as f:
+        pickle.dump(corpus, f, 4)
+        
 def conllu2list():
     """
     Convert UD_Swedish-Talbanken conllu files to a single corpus for training 
