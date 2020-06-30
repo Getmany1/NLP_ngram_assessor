@@ -25,11 +25,15 @@ if type(text) is str:
 for sent_idx, sent in enumerate(text):
     sent_segmented = []
     for word_idx, word in enumerate(sent):
-        [sent_segmented.append(segment) for segment in
-         morph_model.viterbi_nbest(word.lower(),1)[0][0]]
+        for segment in morph_model.viterbi_nbest(word.lower(),2)[-1][0]:
+            sent_segmented.append(segment)
     text_segmented.append(sent_segmented)
+
     
 print(len(text_segmented))
+
+        '''[sent_segmented.append(segment) for segment in
+         morph_model.viterbi_nbest(word.lower(),1)[0][0]]'''
 # Save the corpus
 print('saving...')
 with open(os.path.join('data','corpora', corpus[-4:] + '_morph_segmented.pkl'), 'wb') as f:
