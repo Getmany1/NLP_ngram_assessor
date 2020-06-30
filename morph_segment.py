@@ -1,6 +1,7 @@
 import dill as pickle
 import morfessor
 import os
+from nltk import word_tokenize, sent_tokenize
 
 corpus = 'Wikipedia_fi_2017.pkl'
 io = morfessor.MorfessorIO(compound_separator=r"[^-\w]+" ,lowercase=True)
