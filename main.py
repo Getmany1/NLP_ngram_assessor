@@ -38,6 +38,10 @@ pos_lm_corpus_name = 'Wikipedia_fi_2017_pos.pkl'
 # FINNISH
 morph_corpus = 'Wikipedia_fi_2017.txt'
 
+# Text corpora consisting of word segments used for training morpheme LMs
+# FINNISH 
+morph_lm_corpus_name = 'Wikipedia_fi_2017_morph_segmented.pkl'
+
 # POS-tagged corpora for training POS taggers
 # ENGLISH
 #pos_corpus = nltk.corpus.treebank.tagged_sents()
@@ -70,12 +74,17 @@ lm_name = 'Wikipedia_fi_2017_2gram.pkl'
 # FINNISH
 pos_lm_name = 'Wikipedia_fi_2017_pos_3gram.pkl'
 
+# Morpheme Language Models
+# FINNISH
+#lm_segmented_name = 'Wikipedia_fi_2017_morph_segmented_3gram.pkl'
+lm_segmented_name = 'Wikipedia_fi_2017_morph_segmented_3gram_interpolated.pkl'
+
 # Morfessor models
 # SWEDISH
-#morph_model = 'yle_sv_minicorpus_morph'
-#morph_model = 'Yle_sv_morph'
+#morph_model_name = 'yle_sv_minicorpus_morph'
+#morph_model_name = 'Yle_sv_morph'
 # FINNISH
-morph_model = 'Wikipedia_fi_2017_morph'
+morph_model_name = 'Wikipedia_fi_2017_morph'
 
 # POS Taggers
 # ENGLISH
@@ -94,8 +103,10 @@ nlp = Pipeline(lang='fi', processors='tokenize,mwt,pos') #source: https://stanfo
 
 lm_type = 'ngram' # language model type
 pos_lm_type = 'ngram' # POS language model type
+morph_lm_type = 'ngram' # morpheme language model type
 n = 2 # ngram size for LM
 n_pos = 3 # ngram size for POS LM
+n_morph = 3 # ngram size for Morpheme LM
 split_prob = 0.5 # split probability for train_morfessor()
 pos_type = 'crf' # POS model type
 threshold = float('-inf') # lowest threshold for ngram log-probability
@@ -109,6 +120,7 @@ TRAIN_LM = False # train new language model or load pretrained one
 TRAIN_POS_LM = False # train new POS language model or load pretrained one
 TRAIN_POS = False # train POS tagger or load pretrained one
 TRAIN_MORPH = False # Train Morfessor model or load pretrained one
+TRAIN_MORPH_LM = False # train new morpheme language model or load pretrained one
 SAVE_REPORT = False # save evaluation results
 
 if TRAIN_LM:
@@ -140,7 +152,14 @@ if TRAIN_MORPH:
     morph_model = train_morfessor(morph_corpus, split_prob)
 else:
     io = morfessor.MorfessorIO(compound_separator=r"[^-\w]+" ,lowercase=True)
-    morph_model = io.read_binary_model_file(os.path.join(model_dir, morph_model))
+    morph_model = io.read_binary_model_file(os.path.join(model_dir, morph_model_name))
+
+if TRAIN_MORPH_LM:
+    if morph_lm_type == 'ngram':
+        lm_segmented = train_ngram(morph_lm_corpus_name, n_morph, words=True)
+else:
+    with open(os.path.join(model_dir, lm_segmented_name), 'rb') as f:
+        lm_segmented = pickle.load(f)  
 
 # Load the descriptions of POS tags
 if pos_name == 'Penn_treebank_crf.pkl':
@@ -150,8 +169,8 @@ elif pos_name == 'UD_Swedish-Talbanken_crf.pkl' or pos_name == 'Wikipedia_fi_201
 elif pos_name == 'Yle_sv_pos_crf.pkl':
     pos_descr_dict = pos_dict_sv_suc()
 
-eval_result = eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp, 
-                   pos_descr_dict, threshold)
+eval_result = eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model,
+                   lm_segmented, nlp, pos_descr_dict, threshold)
 if SAVE_REPORT:
     with open(os.path.join('results', result_file), 'w', encoding='utf-8') as f:
             f.write(eval_result)

@@ -71,6 +71,7 @@ def pos_dict_sv(): #UPOS
             'ADP': 'Adposition',
             'ADV': 'Adverb',
             'AUX': 'Auxiliary',
+            'CONJ': 'Conjunction', #!!!
             'CCONJ': 'Coordinating conjunction',
             'DET': 'Determiner',
             'INTJ': 'Interjection',

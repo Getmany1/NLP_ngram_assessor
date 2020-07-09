@@ -46,17 +46,60 @@ def mean_logprob(context, pos_lm):
             logprobs.append(logprob)
     return np.mean(logprobs)
 
-def similar_words(word, morph_model, lm):
+def typos(oov_word, morph_model, lm_segmented, threshold=-50):
+    """
+    Check an OOV word for typos.
+    """
+    nbest = min(2, len(oov_word))
+    segmentations = [morph_model.viterbi_nbest(oov_word, nbest)[i][0]
+                     for i in range(nbest)]
+    segmentations = [segmented_word for segmented_word in segmentations if
+                     len(segmented_word) > 1]
+    
+    # If no segmentations with more than 1 segment, it is not possible to get
+    # a 2gram or 3gram probability => return False (= no typos found)
+    if not segmentations:
+        return False
+    for segmented_word in segmentations:
+        score = lm_segmented.logscore(segmented_word[-1], segmented_word[:-1])
+        
+        # If any segmentation provides score higher than the threshold, the word
+        # is likely to be written correctly
+        if score > threshold:
+            return False
+        
+    # All scores were below the threshold => a typo(s) is/are likely to be in 
+    # the word
+    return True
+    
+def similar_words(word, morph_model, lm, lm_segmented):
     """
     Search for similar words from the LM vocabulary
     """
     similar_words = []
     nbest = min(5, len(word))
-    segmentations = [morph_model.viterbi_nbest(word, nbest)[i][0] for i in range(nbest)]
+    segmentations = [morph_model.viterbi_nbest(word, nbest)[i][0]
+                     for i in range(nbest)]
     for segmented_word in segmentations:
-        word_to_search = max(segmented_word, key=len)
-        if word_to_search in lm.vocab and word_to_search not in similar_words:
-            similar_words.append(word_to_search)
+        word_to_search = ''.join(segmented_word[:-1]) #word without last segment
+        #word_to_search = max(segmented_word, key=len) #the longest segment 
+                        #(does not work for Finnish as well as for Swedish)
+        if word_to_search in lm.vocab:
+            if word_to_search not in similar_words:
+                similar_words.append(word_to_search)
+        
+        # If the word without its last morpheme is not found from the
+        # vocabulary, search for possible word continuations using the 
+        # the language model trained on word morphemes
+        else:
+            possible_continuations = [next_morph[0] for next_morph in
+                                      lm_segmented.counts.__getitem__
+                                      (segmented_word[:-1]).most_common(3)]
+            for morph in possible_continuations:
+                similar_word = word_to_search + morph
+                if similar_word not in similar_words:
+                    if similar_word in lm.vocab:
+                        similar_words.append(similar_word)
     return similar_words
 
 def similar_ngrams(ngram, morph_model, lm, nbest):
@@ -183,8 +226,8 @@ def compare_feats(feat_dict_to_check, feat_dict_correct):
     #print(corrected_feats_string)
     return corrected_feats_string
             
-def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp, 
-         pos_descr_dict, threshold=float('-inf')):
+def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, lm_segmented,
+         nlp, pos_descr_dict, threshold=float('-inf')):
     
     n = 2 # LM ngram order. Use bigrams
     n_pos = pos_lm.counts.__len__() # POS LM ngram order
@@ -219,7 +262,7 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp,
                 err_unk_count += 1
                 errs_unk += str(err_unk_count) + '. ' + word
                 
-                sim_words = similar_words(word, morph_model, lm)
+                sim_words = similar_words(word, morph_model, lm, lm_segmented)
                 if similar_words:
                     errs_unk += '. Similar words: ' + ', '.join(sim_words) \
                         + '. You can also try to replace the word with some '
@@ -320,6 +363,10 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp,
                     #feat_dict_correct, feat_string = morph_features(text[sent_idx][i-1],
                     #                                                tag_to_use,
                     #                                                nlp, lm)
+                    #TEST #!!!
+                    #print(tags)
+                    #print(ngram, tags[sent_idx][i +(n_pos-1)])
+                    #print('blbla', morph_feat_string)
                     errs += 'You used the ' + pos_descr_dict[tags[sent_idx]
                                                              [i +(n_pos-1)]].lower() + ' ' + \
                         ngram[-1] + morph_feat_string + '. '
@@ -365,9 +412,9 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp,
                                 corr_feat_string = compare_feats(feat_dict_to_check,
                                                                  feat_dict_correct)
                                 if corr_feat_string:
-                                    errs += 'However, some morph. features seem' \
-                                    ' to be incorrect; here are those features' \
-                                    ' with corrected values: ' + corr_feat_string + '.'
+                                    errs += 'It is also recommended to correct' \
+                                        ' the following morphological features: ' \
+                                            + corr_feat_string + '.'
                                 errs += '\n'
                     else:      
                         errs += 'You can also try to use some other ' + pos_descr_dict[tags[sent_idx]
@@ -378,9 +425,10 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, nlp,
                         corr_feat_string = compare_feats(feat_dict_to_check,
                                                          feat_dict_correct)
                         if corr_feat_string:
-                            errs += 'However, some morph. features seem to be ' \
-                            'incorrect; here are those features with ' \
-                            'corrected values: ' + corr_feat_string + '.'
+                            errs += 'It is also recommended to correct the' \
+                                ' following morphological featutes: ' \
+                                    + corr_feat_string + '.'
+                                
                         errs += '\n'
             i += 1
 
