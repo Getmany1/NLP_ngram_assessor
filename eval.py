@@ -191,7 +191,7 @@ def morph_features(prev_word, pos, nlp, lm):
     # Collect 15 words which are most likely to follow the previous word w_(i-1)
     # according to the LM and preserve only the ones that belong to the same
     # part of speech as the current word w_i
-    for word, counts in lm.counts.__getitem__([prev_word]).most_common(20):
+    for word, _ in lm.counts.__getitem__([prev_word]).most_common(20):
         doc = nlp(word).to_dict()[0][0]
         if 'feats' in doc and (doc['upos'] == pos or doc['xpos'].split('|')[0] == pos):
             for pair in doc['feats'].split('|'):
@@ -363,10 +363,6 @@ def eval(text_to_analyze, lm, pos_lm, pos_tagger, morph_model, lm_segmented,
                     #feat_dict_correct, feat_string = morph_features(text[sent_idx][i-1],
                     #                                                tag_to_use,
                     #                                                nlp, lm)
-                    #TEST #!!!
-                    #print(tags)
-                    #print(ngram, tags[sent_idx][i +(n_pos-1)])
-                    #print('blbla', morph_feat_string)
                     errs += 'You used the ' + pos_descr_dict[tags[sent_idx]
                                                              [i +(n_pos-1)]].lower() + ' ' + \
                         ngram[-1] + morph_feat_string + '. '
